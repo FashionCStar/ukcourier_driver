@@ -5,7 +5,7 @@ import { Dimensions, StyleSheet, View, TouchableOpacity, Platform, PermissionsAn
 import haversine from "haversine";
 import Geolocation from '@react-native-community/geolocation';
 import RNFS from 'react-native-fs';
-import MapboxGL, {Logger} from "@react-native-mapbox-gl/maps";
+import MapboxGL, { Logger } from "@react-native-mapbox-gl/maps";
 import geoViewport from '@mapbox/geo-viewport';
 
 MapboxGL.setAccessToken("pk.eyJ1IjoiZmFzaGlvbmRldjEiLCJhIjoiY2tscjlmM3diMTNkaTJvbnc1OXBpbzVwNiJ9.yJIaRGA7FoRXjQCSPj3WEA");
@@ -52,21 +52,19 @@ class Locator extends Component {
       zoomLevel: 15
     };
   }
-  
+
   componentDidMount = async () => {
-    const { width, height } = Dimensions.get('window');
-    console.log('width', width, 'height', height);
     try {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, {
-          'title': 'Location Access Required',
-          'message': 'This App needs to Access your location'
-        }
+        'title': 'Location Access Required',
+        'message': 'This App needs to Access your location'
+      }
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         console.log('permission granted', granted)
         await this.goToMyLocation();
-        console.log('current user position', this.state.userCurPos)
+        // console.log('current user position', this.state.userCurPos)
         // this.setState({
         //   centerCoords: [this.state.userCurPos[0], this.state.userCurPos[1]]
         // })
@@ -83,7 +81,7 @@ class Locator extends Component {
   goToMyLocation = () => {
     Geolocation.getCurrentPosition(
       ({ coords }) => {
-        console.log('current coordinates', coords.longitude)
+        // console.log('current coordinates', coords.longitude)
         this.setState({
           isGetLocation: true,
           userCurPos: [coords.longitude, coords.latitude],
@@ -152,7 +150,7 @@ class Locator extends Component {
     const bounds = geoViewport.bounds(
       this.state.centerCoords,
       4,
-      [width*4, height*4],
+      [width * 6, height * 6],
       MAPBOX_VECTOR_TILE_SIZE,
     );
 
@@ -164,7 +162,7 @@ class Locator extends Component {
         [bounds[2], bounds[3]],
       ],
       minZoom: 5,
-      maxZoom: 6,
+      maxZoom: this.state.zoomLevel,
     };
     this.props.showProgress();
     MapboxGL.offlineManager.createPack(options, this.onDownloadProgress);
@@ -172,7 +170,7 @@ class Locator extends Component {
   onDownloadProgress = (offlineRegion, offlineRegionStatus) => {
     if (offlineRegionStatus.state == 2) {
       this.props.hideProgress();
-      console.log('offline progress', offlineRegionStatus);
+      // console.log('offline progress', offlineRegionStatus);
     }
     this.setState({
       offLinePackName: offlineRegion.name,
@@ -184,22 +182,19 @@ class Locator extends Component {
   render() {
     const { searchKey, isGetLocation, zoomLevel, centerCoords, userCurPos, mapType } = this.state;
 
-    console.log('center coordinates', centerCoords);
+    // console.log('center coordinates', centerCoords);
     return (
       <>
-        <Header iosBarStyle={Material.iosStatusbar} searchBar rounded>
-          <Item style={{ marginTop: 10 }}>
-            <Input placeholder="Search" onChangeText={this.onChangeSearch} value={searchKey} />
-            {searchKey ?
-              <Button transparent rounded icon onPress={this.onCancelSearch}>
-                <Icon name="close-circle" />
-              </Button> : null}
-            <Button transparent onPress={this.onCheck} rounded>
-              <Icon name="close" />
-            </Button>
-          </Item>
-        </Header>
         <Container>
+          <View style={{zIndex: 999, backgroundColor: Material.whiteColor, margin: 5, borderRadius: 50, flexDirection: 'row', shadowColor: '#000', alignItems: 'center', justifyContent: 'center' }}>
+            <Button transparent rounded>
+              <Icon name="location" style={{ color: '#fa0' }}/>
+            </Button>
+            <Input placeholder="Search post code or address" onChangeText={this.onChangeSearch} value={searchKey} style={{ height: 40 }}/>
+            <Button transparent onPress={this.onCancelSearch} rounded>
+              <Icon name="search" style={{ color: '#333' }}/>
+            </Button>
+          </View>
           {isGetLocation ? <MapboxGL.MapView
             ref={map => { this.map = map; }}
             style={mapStyles.map}
@@ -208,13 +203,16 @@ class Locator extends Component {
             <MapboxGL.Camera
               zoomLevel={zoomLevel}
               centerCoordinate={centerCoords}
+              animationMode={'moveTo'}
+              // followUserLocation={true}
+              // followUserMode={"normal"}
             />
             <MapboxGL.UserLocation
               showsUserHeadingIndicator={true}
               renderMode={'normal'}
             />
           </MapboxGL.MapView> : null}
-          
+
           <TouchableOpacity onPress={this.changeMapType} rounded style={[mapStyles.mapTypeBtnContainerPosition, mapStyles.myLocationBtnContainer]}>
             <Image
               style={{ width: 30, height: 30 }}
@@ -232,7 +230,7 @@ class Locator extends Component {
               style={{ width: 30, height: 30 }}
               source={require('../../../assets/images/icons/maplayers.png')}
             /> */}
-            <Icon name='cloud-download' size={30} />
+            <Icon name='cloud-download' />
           </TouchableOpacity>
         </Container>
       </>
@@ -286,29 +284,29 @@ const mapStyles = StyleSheet.create({
     backgroundColor: "transparent"
   },
   mapTypeBtnContainerPosition: {
-    left: 10,
-    top: 10,
-  },
-  myLocationBtnContainerPosition: {
-    left: 10,
+    right: 10,
     top: 70,
   },
-  mapDownloadBtnContainerPosition: {
-    left: 10,
+  myLocationBtnContainerPosition: {
+    right: 10,
     top: 130,
+  },
+  mapDownloadBtnContainerPosition: {
+    right: 10,
+    top: 190,
   },
   myLocationBtnContainer: {
     position: 'absolute',
     width: 50,
     height: 50,
     borderRadius: 30,
-    backgroundColor: "#d2d2d2",
+    backgroundColor: "#fff",
     justifyContent: 'center',
     alignItems: 'center'
   }
 });
 
-function mapStateToProps({  }) {
+function mapStateToProps({ }) {
   return {};
 }
 

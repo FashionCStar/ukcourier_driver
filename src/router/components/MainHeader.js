@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Body, Button, Header, Icon, Left, Right, Text, Drawer } from "native-base";
+import { Body, Button, Header, Icon, Left, Right, Text, Drawer, View } from "native-base";
 import { StatusBar } from "react-native";
 
 import { Material } from "../../styles";
@@ -9,34 +9,27 @@ class AuthHeader extends Component {
   }
 
   openDrawer = () => {
-    this.props.navigation.navigate("DrawerOpen");
+    this.props.navigation.openDrawer(); 
   }
 
   onLogout = () => { }
 
   render() {
     const { navigation } = this.props;
-    if (navigation.isFirstRouteInParent()) return null;
-
     const routeIndex = navigation.state.index;
-    if (routeIndex == 3 || routeIndex == 4) {
-      return (<StatusBar translucent={false}/>)
-    }
-
-    // return (
-    //   <Header transparent iosBarStyle={Material.iosStatusbar}>
-    //   </Header>
-    // );
 
     return (
-      <Header transparent iosBarStyle={Material.iosStatusbar}>
-        <Left>
-          <Button transparent onPress={this.openDrawer}>
-            <Icon name='menu-outline' style={{ color: Material.brandPrimary }} />
-          </Button>
-        </Left>
-        <Body />
-      </Header>
+      <View transparent style={{flexDirection: 'row', backgroundColor: '#333'}}>
+        <Button transparent onPress={this.openDrawer}>
+          <Icon name='menu' fontSize={30} style={{ color: Material.whiteColor, fontSize: 30 }} />
+        </Button>
+        <Body style={{alignItems: 'center'}}>
+          <Text style={{color: Material.whiteColor}}>{navigation.state.routes[routeIndex].routeName}</Text>
+        </Body>
+        <Button transparent>
+          <Icon name='menu' style={{ color: 'transparent', fontSize: 30 }} />
+        </Button>
+      </View>
     );
   }
 }
